@@ -5,10 +5,11 @@
 # is restricted to this project.
 
 # General application configuration
-use Mix.Config
+import Config
 
 config :sladmin,
-  ecto_repos: [Sladmin.Repo]
+  ecto_repos: [Sladmin.Repo],
+  salesloft_api_key: System.get_env("SALESLOFT_API_KEY")
 
 # Configures the endpoint
 config :sladmin, SladminWeb.Endpoint,

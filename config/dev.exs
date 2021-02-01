@@ -1,11 +1,8 @@
-use Mix.Config
+import Config
 
 # Configure your database
 config :sladmin, Sladmin.Repo,
-  username: "postgres",
-  password: "postgres",
-  database: "sladmin_dev",
-  hostname: "localhost",
+  url: "postgres://postgres:postgres@db:5432/sladmin_dev",
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
