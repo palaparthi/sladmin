@@ -9,6 +9,10 @@ defmodule Sladmin.CMS do
 
   alias Sladmin.CMS.Person
 
+  @options [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 500]
+  @base_url "https://api.salesloft.com/v2/people.json"
+  @headers [Authorization: "Bearer #{System.get_env("SALESLOFT_API_KEY")}", Accept: "Application/json; Charset=utf-8"]
+
   @doc """
   Make Http request
 
@@ -21,45 +25,44 @@ defmodule Sladmin.CMS do
       {:error, msg}
   """
   defp make_request(url) do
-    token = Application.get_env(:sladmin, :salesloft_api_key)
-    headers = [Authorization: "Bearer #{token}", Accept: "Application/json; Charset=utf-8"]
-    options = [ssl: [{:versions, [:"tlsv1.2"]}], recv_timeout: 500]
-
     with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <-
-           HTTPoison.get(url, headers, options),
+           HTTPoison.get(url, @headers, @options),
          {:ok, decoded_response} <- Jason.decode(body) do
       {:ok, decoded_response}
     else
-      {:error, msg} -> {:error, msg}
+      {:error, msg} ->
+        Logger.error("Request failed for url #{url}, message - #{inspect(msg)}")
+        {:error, msg}
     end
   end
 
+
   @doc """
-  Return list people by page
+  Return list of all people from specified page to end, defaults to 1
 
     ## Examples
 
-      iex> make_request(url)
-      {:ok, body}
+      iex> get_all_people(1)
+      [%Person{}, ...]
 
-      iex> make_request(user)
-      {:error, msg}
+      iex> get_all_people(nil)
+      []
   """
-  def get_people_by_page(page \\ 0) do
-    actual_page = page + 1
+  def get_all_people(page \\ 1)
 
-    url =
-      "https://api.salesloft.com/v2/people.json?include_paging_counts=true&per_page=100&page=#{
-        actual_page
-      }"
+  def get_all_people(nil), do: []
+
+  def get_all_people(page) do
+    url = "#{@base_url}?per_page=100&page=#{page}"
+    Logger.info("Requesting people info for page #{page}")
 
     case make_request(url) do
       {:ok, response} ->
-        Map.get(response, "data")
-        |> Enum.map(&Person.apply_changeset(%Person{id: Map.get(&1, "id")}, &1))
-
-      {:error, msg} ->
-        {:error, msg}
+        next_page = Map.get(response, "metadata", %{}) |> Map.get("paging", %{}) |> Map.get("next_page")
+        people = Map.get(response, "data")
+                 |> Enum.map(&Person.apply_changeset(%Person{id: Map.get(&1, "id")}, &1))
+        people ++ get_all_people(next_page)
+      {:error, _} -> []
     end
   end
 
@@ -73,7 +76,6 @@ defmodule Sladmin.CMS do
 
   """
   def list_people() do
-    # todo: get all pages
-    get_people_by_page()
+    get_all_people()
   end
 end

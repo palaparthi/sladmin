@@ -6,7 +6,7 @@ defmodule Sladmin.Repo.Migrations.CreateUsers do
       add :name, :text
       add :email, :text
 
-      timestamps(type: :utc_datetime_usec)
+      timestamps(type: :timestamptz)
     end
 
     create_if_not_exists unique_index(:users, [:email])

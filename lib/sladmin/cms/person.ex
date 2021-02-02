@@ -15,7 +15,7 @@ defmodule Sladmin.CMS.Person do
   end
 
   @doc false
-  def apply_changeset(%__MODULE__{id: _id} = person, attrs) do
+  def apply_changeset(%__MODULE__{} = person, attrs) do
     person
     |> Ecto.Changeset.cast(attrs, __MODULE__.__schema__(:fields))
     |> Ecto.Changeset.apply_changes()
