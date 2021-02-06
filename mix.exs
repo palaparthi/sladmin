@@ -47,7 +47,8 @@ defmodule Sladmin.MixProject do
       {:jason, "~> 1.2"},
       {:absinthe, "~> 1.5", override: true},
       {:absinthe_plug, "~> 1.5.4", override: true},
-      {:httpoison, "~> 1.8", override: true}
+      {:httpoison, "~> 1.8", override: true},
+      {:mock, "~> 0.3.0", only: :test}
     ]
   end
 
