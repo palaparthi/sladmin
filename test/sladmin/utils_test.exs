@@ -37,4 +37,28 @@ defmodule Sladmin.UtilsTest do
     end
   end
 
+  describe "character frequency" do
+    alias Sladmin.Utils.CharacterFrequency
+
+    test "count_characters_in_string/1 returns frequency map" do
+      map = %{"X" => 2, "Y" => 2, "Z" => 2, "@" => 1, "C" => 1, "O" => 1, "M" => 1, "." => 1}
+      assert CharacterFrequency.calculate("xyz@xyz.com") === map
+    end
+
+    test "count_characters_in_string/1 returns empty map" do
+      map = %{}
+      assert CharacterFrequency.calculate("") === map
+    end
+
+    test "count_characters_in_string/1 returns map with size 1" do
+      map = %{"X" => 1}
+      assert CharacterFrequency.calculate("x") === map
+    end
+
+    test "count_characters_in_string/1 returns map with size 2" do
+      map = %{"X" => 2}
+      assert CharacterFrequency.calculate("xX") === map
+    end
+  end
+
 end

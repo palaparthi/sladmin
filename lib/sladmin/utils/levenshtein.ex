@@ -21,7 +21,7 @@ defmodule Sladmin.Utils.Levenshtein do
   end
 
   defp store_result(key, dist, cache) do
-    {dist, Map.put(cache, key, count)}
+    {dist, Map.put(cache, key, dist)}
   end
 
   defp distance(x, y), do: distance(x, y, Map.new()) |> elem(0)

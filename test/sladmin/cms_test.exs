@@ -48,26 +48,6 @@ defmodule Sladmin.CMSTest do
   end
 
   describe "character frequency" do
-    test "count_characters_in_string/1 returns frequency map" do
-      map = %{"X" => 2, "Y" => 2, "Z" => 2, "@" => 1, "C" => 1, "O" => 1, "M" => 1, "." => 1}
-      assert CMS.count_characters_in_string("xyz@xyz.com") === map
-    end
-
-    test "count_characters_in_string/1 returns empty map" do
-      map = %{}
-      assert CMS.count_characters_in_string("") === map
-    end
-
-    test "count_characters_in_string/1 returns map with size 1" do
-      map = %{"X" => 1}
-      assert CMS.count_characters_in_string("x") === map
-    end
-
-    test "count_characters_in_string/1 returns map with size 2" do
-      map = %{"X" => 2}
-      assert CMS.count_characters_in_string("xx") === map
-    end
-
     test "get_people_character_frequency/0 returns all frequencies" do
       frequencies = CMS.get_people_character_frequency()
       assert length(frequencies) == 10

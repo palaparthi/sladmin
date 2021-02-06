@@ -5,6 +5,7 @@ defmodule Sladmin.CMS do
 
   import Ecto.Query, warn: false
   alias Sladmin.Repo
+  alias Sladmin.Utils.CharacterFrequency
   require Logger
 
   alias Sladmin.CMS.Person
@@ -88,25 +89,6 @@ defmodule Sladmin.CMS do
   end
 
   @doc """
-  Returns character counts a string
-
-  ## Examples
-
-      iex> count_characters_in_string("bob@gmail.com")
-      %{"B" => 2, ...}
-
-  """
-  def count_characters_in_string(str) do
-    str
-    |> String.codepoints()
-    |> Enum.reduce(%{}, fn c, acc ->
-      upper_char = String.upcase(c)
-      val = Map.get(acc, upper_char, 0) + 1
-      Map.put(acc, upper_char, val)
-    end)
-  end
-
-  @doc """
   Returns character counts of every string in the list
 
   ## Examples
@@ -120,7 +102,7 @@ defmodule Sladmin.CMS do
     get_all_people()
     |> Stream.map(&Map.get(&1, :email_address))
     |> Stream.filter(&(!!&1))
-    |> Task.async_stream(&count_characters_in_string/1)
+    |> Task.async_stream(&CharacterFrequency.calculate/1)
     |> Enum.reduce(%{}, fn {:ok, map}, acc ->
       Map.merge(acc, map, fn _k, v1, v2 -> v1 + v2 end)
     end)
