@@ -60,5 +60,4 @@ defmodule Sladmin.UtilsTest do
       assert CharacterFrequency.calculate("xX") === map
     end
   end
-
 end

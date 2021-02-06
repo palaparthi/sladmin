@@ -25,5 +25,4 @@ defmodule Sladmin.Utils.CharacterFrequency do
       Map.put(acc, upper_char, val)
     end)
   end
-
 end
