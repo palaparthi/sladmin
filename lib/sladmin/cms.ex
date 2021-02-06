@@ -17,11 +17,17 @@ defmodule Sladmin.CMS do
   ## Examples
 
       iex> list_people()
-      [%Person{}, ...]
+      {:ok, [%Person{}, ...]}
+
+    iex> list_people()
+      {:error, msg}
 
   """
   def list_people() do
-    SalesloftApiGateway.get_all_people()
+    case SalesloftApiGateway.get_all_people() do
+      {:error, msg} -> {:error, msg}
+      people -> {:ok, people}
+    end
   end
 
   @doc """
@@ -29,21 +35,31 @@ defmodule Sladmin.CMS do
 
   ## Examples
 
-      iex> count_characters_in_string(["bob@gmail.com"])
-      %{"B" => 2}, ...
+      iex> get_people_character_frequency(["bob@gmail.com"])
+      {:ok, %{"B" => 2}, ...}
+
+    iex> get_people_character_frequency(["bob@gmail.com"])
+      {:error, msg}
 
   """
   def get_people_character_frequency() do
-    # use streams for lazy computation
-    SalesloftApiGateway.get_all_people()
-    |> Stream.map(&Map.get(&1, :email_address))
-    |> Stream.filter(&(!!&1))
-    |> Task.async_stream(&CharacterFrequency.calculate/1)
-    |> Enum.reduce(%{}, fn {:ok, map}, acc ->
-      Map.merge(acc, map, fn _k, v1, v2 -> v1 + v2 end)
-    end)
-    |> Map.to_list()
-    |> Enum.sort_by(fn {_k, v} -> v end, :desc)
-    |> Enum.map(fn {k, v} -> %{letter: k, count: v} end)
+    case SalesloftApiGateway.get_all_people() do
+      {:error, msg} ->
+        {:error, msg}
+
+      people ->
+        {:ok,
+         people
+         # use streams for lazy computation
+         |> Stream.map(&Map.get(&1, :email_address))
+         |> Stream.filter(&(!!&1))
+         |> Task.async_stream(&CharacterFrequency.calculate/1)
+         |> Enum.reduce(%{}, fn {:ok, map}, acc ->
+           Map.merge(acc, map, fn _k, v1, v2 -> v1 + v2 end)
+         end)
+         |> Map.to_list()
+         |> Enum.sort_by(fn {_k, v} -> v end, :desc)
+         |> Enum.map(fn {k, v} -> %{letter: k, count: v} end)}
+    end
   end
 end

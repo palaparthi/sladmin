@@ -2,12 +2,14 @@ defmodule Sladmin.Integrations.SalesloftApiGateway do
   require Logger
   alias Sladmin.CMS.Person
 
-  @options [ssl: [{:versions, [:"tlsv1.2"]}], timeout: 10000, recv_timeout: 10000]
+  @options [ssl: [{:versions, [:"tlsv1.2"]}], timeout: 10000]
   @base_url "https://api.salesloft.com/v2/people.json"
   @headers [
     Authorization: "Bearer #{System.get_env("SALESLOFT_API_KEY")}",
     Accept: "Application/json; Charset=utf-8"
   ]
+  @retries 3
+  @sleep 1000
 
   @doc """
   Return list of all people from specified page to end, defaults to 1
@@ -19,6 +21,9 @@ defmodule Sladmin.Integrations.SalesloftApiGateway do
 
       iex> get_all_people(nil)
       []
+
+      iex> get_all_people(nil)
+      {:error, msg}
   """
   def get_all_people, do: get_people_by_page(1)
 
@@ -28,7 +33,7 @@ defmodule Sladmin.Integrations.SalesloftApiGateway do
     url = "#{@base_url}?per_page=100&page=#{page}"
     Logger.info("Requesting people info for page #{page}")
 
-    case make_request(url) do
+    case make_request(url, @retries) do
       {:ok, response} ->
         next_page =
           Map.get(response, "metadata", %{}) |> Map.get("paging", %{}) |> Map.get("next_page")
@@ -40,7 +45,7 @@ defmodule Sladmin.Integrations.SalesloftApiGateway do
         people ++ get_people_by_page(next_page)
 
       {:error, _} ->
-        []
+        {:error, "API request failed"}
     end
   end
 
@@ -55,15 +60,26 @@ defmodule Sladmin.Integrations.SalesloftApiGateway do
       iex> make_request(user)
       {:error, msg}
   """
-  defp make_request(url) do
+  defp make_request(url, retries) do
     with {:ok, %HTTPoison.Response{status_code: 200, body: body}} <-
            HTTPoison.get(url, @headers, @options),
          {:ok, decoded_response} <- Jason.decode(body) do
       {:ok, decoded_response}
     else
       {:error, msg} ->
-        Logger.error("Request failed for url #{url}, message - #{inspect(msg)}")
-        {:error, msg}
+        Logger.error(
+          "Request failed for url #{url}, message - #{inspect(msg)}, retries- #{retries}"
+        )
+
+        case retries do
+          0 ->
+            {:error, msg}
+
+          r ->
+            Process.sleep(@sleep)
+            Logger.info("sleep for 3 seconds before making another call")
+            make_request(url, r - 1)
+        end
     end
   end
 end

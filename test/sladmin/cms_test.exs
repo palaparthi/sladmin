@@ -40,7 +40,7 @@ defmodule Sladmin.CMSTest do
 
   describe "people" do
     test "list_people/1, 2 calls, returns 1 person per page" do
-      people = CMS.list_people()
+      {:ok, people} = CMS.list_people()
       assert_called(HTTPoison.get(@page1_url, :_, :_))
       assert_called(HTTPoison.get(@page2_url, :_, :_))
       assert length(people) == 2
@@ -49,12 +49,12 @@ defmodule Sladmin.CMSTest do
 
   describe "character frequency" do
     test "get_people_character_frequency/0 returns all frequencies" do
-      frequencies = CMS.get_people_character_frequency()
+      {:ok, frequencies} = CMS.get_people_character_frequency()
       assert length(frequencies) == 10
     end
 
     test "get_people_character_frequency/0 returns all frequencies in desc count order" do
-      frequencies = CMS.get_people_character_frequency()
+      {:ok, frequencies} = CMS.get_people_character_frequency()
       assert List.first(frequencies).count == 4
       assert List.first(frequencies).letter == "C"
       assert List.last(frequencies).count == 2
