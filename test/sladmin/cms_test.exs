@@ -24,19 +24,21 @@ defmodule Sladmin.CMSTest do
   @page2_url "https://api.salesloft.com/v2/people.json?per_page=100&page=2"
 
   setup_with_mocks([
-    {HTTPoison, [], [get: fn
-      @page1_url, _, _ ->
-        {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(@mock_resp1)}}
+    {HTTPoison, [],
+     [
+       get: fn
+         @page1_url, _, _ ->
+           {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(@mock_resp1)}}
 
-      @page2_url, _, _ ->
-        {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(@mock_resp2)}}
-    end]}
+         @page2_url, _, _ ->
+           {:ok, %HTTPoison.Response{status_code: 200, body: Jason.encode!(@mock_resp2)}}
+       end
+     ]}
   ]) do
     {:ok, []}
   end
 
   describe "people" do
-
     test "list_people/1, 2 calls, returns 1 person per page" do
       people = CMS.list_people()
       assert_called(HTTPoison.get(@page1_url, :_, :_))
@@ -65,7 +67,7 @@ defmodule Sladmin.CMSTest do
       map = %{"X" => 2}
       assert CMS.count_characters_in_string("xx") === map
     end
-    
+
     test "get_people_character_frequency/0 returns all frequencies" do
       frequencies = CMS.get_people_character_frequency()
       assert length(frequencies) == 10
