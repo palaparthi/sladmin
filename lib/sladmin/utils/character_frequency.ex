@@ -25,4 +25,17 @@ defmodule Sladmin.Utils.CharacterFrequency do
       Map.put(acc, upper_char, val)
     end)
   end
+
+  def calculate_for_list([]), do: %{}
+
+  def calculate_for_list(li) do
+    li
+    |> Task.async_stream(&calculate/1)
+    # merge and add count for all strings
+    |> Enum.reduce(%{}, fn {:ok, map}, acc ->
+      Map.merge(acc, map, fn _k, v1, v2 -> v1 + v2 end)
+    end)
+    |> Map.to_list()
+    |> Enum.sort_by(fn {_k, v} -> v end, :desc)
+  end
 end

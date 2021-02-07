@@ -13,11 +13,22 @@ defmodule Sladmin.Utils.Levenshtein do
     iex> compare("rose", "ros")
           1
   """
-
   def compare(s, s), do: 0
 
   def compare(s1, s2) do
     distance(to_charlist(s1), to_charlist(s2))
+  end
+
+  @doc """
+    Calculates the levenshtein distance between a
+
+    iex> compare("", "")
+          0
+
+    iex> compare("rose", "ros")
+          1
+  """
+  def compare_people(people) do
   end
 
   defp store_result(key, dist, cache) do

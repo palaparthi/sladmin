@@ -60,4 +60,111 @@ defmodule Sladmin.UtilsTest do
       assert CharacterFrequency.calculate("xX") === map
     end
   end
+
+  describe "character frequency list" do
+    alias Sladmin.Utils.CharacterFrequency
+
+    test "calculate_for_list/1 returns accurate frequencies for 1 item" do
+      expected = [{"X", 2}, {"Y", 2}, {"Z", 2}, {".", 1}, {"@", 1}, {"C", 1}, {"M", 1}, {"O", 1}]
+      frequencies = CharacterFrequency.calculate_for_list(["xyz@xyz.com"])
+      intersection = MapSet.intersection(MapSet.new(frequencies), MapSet.new(expected))
+      assert MapSet.size(intersection) == length(frequencies)
+    end
+
+    test "calculate_for_list/1 returns accurate frequencies for 2 different items with different domain names" do
+      expected = [
+        {"X", 2},
+        {"Y", 2},
+        {"Z", 2},
+        {".", 2},
+        {"@", 2},
+        {"C", 4},
+        {"M", 2},
+        {"O", 2},
+        {"A", 2},
+        {"B", 2}
+      ]
+
+      frequencies = CharacterFrequency.calculate_for_list(["xyz@xyz.com", "abc@abc.com"])
+      intersection = MapSet.intersection(MapSet.new(frequencies), MapSet.new(expected))
+      assert MapSet.size(intersection) == length(frequencies)
+    end
+
+    test "calculate_for_list/1 returns accurate frequencies for 2 different items with same domain names" do
+      expected = [
+        {"X", 3},
+        {"Y", 3},
+        {"Z", 3},
+        {".", 2},
+        {"@", 2},
+        {"C", 3},
+        {"M", 2},
+        {"O", 2},
+        {"A", 1},
+        {"B", 1}
+      ]
+
+      frequencies = CharacterFrequency.calculate_for_list(["xyz@xyz.com", "abc@xyz.com"])
+      intersection = MapSet.intersection(MapSet.new(frequencies), MapSet.new(expected))
+      assert MapSet.size(intersection) == length(frequencies)
+    end
+
+    test "calculate_for_list/1 returns accurate frequencies for 2 items with different domain names" do
+      expected = [
+        {"X", 3},
+        {"Y", 3},
+        {"Z", 3},
+        {".", 2},
+        {"@", 2},
+        {"C", 3},
+        {"M", 2},
+        {"O", 2},
+        {"A", 1},
+        {"B", 1}
+      ]
+
+      frequencies = CharacterFrequency.calculate_for_list(["xyz@xyz.com", "xyz@abc.com"])
+      intersection = MapSet.intersection(MapSet.new(frequencies), MapSet.new(expected))
+      assert MapSet.size(intersection) == length(frequencies)
+    end
+
+    test "calculate_for_list/1 returns in correct order" do
+      expected = [
+        {"X", 3},
+        {"Y", 3},
+        {"Z", 3},
+        {".", 2},
+        {"@", 2},
+        {"C", 3},
+        {"M", 2},
+        {"O", 2},
+        {"A", 1},
+        {"B", 1}
+      ]
+
+      frequencies = CharacterFrequency.calculate_for_list(["aaacbc"])
+      assert frequencies == [{"A", 3}, {"C", 2}, {"B", 1}]
+    end
+
+    test "calculate_for_list/1 returns accurate frequencies for empty string" do
+      expected = []
+      frequencies = CharacterFrequency.calculate_for_list([""])
+      intersection = MapSet.intersection(MapSet.new(frequencies), MapSet.new(expected))
+      assert MapSet.size(intersection) == length(frequencies)
+    end
+
+    test "calculate_for_list/1 returns accurate frequencies for 2 empty strings" do
+      expected = []
+      frequencies = CharacterFrequency.calculate_for_list(["", ""])
+      intersection = MapSet.intersection(MapSet.new(frequencies), MapSet.new(expected))
+      assert MapSet.size(intersection) == length(frequencies)
+    end
+
+    test "calculate_for_list/1 returns accurate frequencies for string with one space" do
+      expected = [{" ", 1}]
+      frequencies = CharacterFrequency.calculate_for_list([" "])
+      intersection = MapSet.intersection(MapSet.new(frequencies), MapSet.new(expected))
+      assert MapSet.size(intersection) == length(frequencies)
+    end
+  end
 end

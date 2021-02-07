@@ -1,14 +1,18 @@
 defmodule Sladmin.Integrations.SalesloftApiGateway do
-  require Logger
-  alias Sladmin.CMS.Person
+  @moduledoc """
+  This module contains, SalesLoft API Gateway functtions
+  """
 
-  @options [ssl: [{:versions, [:"tlsv1.2"]}], timeout: 10000]
+  require Logger
+  alias Sladmin.CMS
+
+  @options [ssl: [{:versions, [:"tlsv1.2"]}], timeout: 8000]
   @base_url "https://api.salesloft.com/v2/people.json"
   @headers [
     Authorization: "Bearer #{System.get_env("SALESLOFT_API_KEY")}",
     Accept: "Application/json; Charset=utf-8"
   ]
-  @retries 3
+  @retries 2
   @sleep 1000
 
   @doc """
@@ -38,14 +42,12 @@ defmodule Sladmin.Integrations.SalesloftApiGateway do
         next_page =
           Map.get(response, "metadata", %{}) |> Map.get("paging", %{}) |> Map.get("next_page")
 
-        people =
-          Map.get(response, "data", [])
-          |> Enum.map(&Person.apply_changeset(%Person{id: Map.get(&1, "id")}, &1))
+        people = Map.get(response, "data", []) |> Enum.map(&CMS.convert_to_person(&1))
 
         people ++ get_people_by_page(next_page)
 
-      {:error, _} ->
-        {:error, "API request failed"}
+      {:error, resp} ->
+        {:error, "API request failed, #{resp.reason}"}
     end
   end
 
@@ -77,7 +79,7 @@ defmodule Sladmin.Integrations.SalesloftApiGateway do
 
           r ->
             Process.sleep(@sleep)
-            Logger.info("sleep for 3 seconds before making another call")
+            Logger.info("sleep for #{@sleep} seconds before making another call")
             make_request(url, r - 1)
         end
     end
