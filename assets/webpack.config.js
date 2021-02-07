@@ -16,22 +16,22 @@ module.exports = (env, options) => {
         new OptimizeCSSAssetsPlugin({})
       ]
     },
-    entry: {
-      'app': glob.sync('./vendor/**/*.js').concat(['./js/app.js'])
-    },
     output: {
-      filename: '[name].js',
+      filename: 'app.js',
       path: path.resolve(__dirname, '../priv/static/js'),
       publicPath: '/js/'
+    },
+    entry: {
+      './js/app.js': './js/app.tsx'
     },
     devtool: devMode ? 'eval-cheap-module-source-map' : undefined,
     module: {
       rules: [
         {
-          test: /\.js$/,
+          test: /\.(j|t)sx?$/,
           exclude: /node_modules/,
           use: {
-            loader: 'babel-loader'
+            loader: "babel-loader"
           }
         },
         {
@@ -43,6 +43,9 @@ module.exports = (env, options) => {
           ],
         }
       ]
+    },
+    resolve: {
+      extensions: ['.js', 'jsx', '.ts', '.tsx']
     },
     plugins: [
       new MiniCssExtractPlugin({ filename: '../css/app.css' }),
