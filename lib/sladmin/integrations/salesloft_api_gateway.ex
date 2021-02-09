@@ -1,6 +1,6 @@
 defmodule Sladmin.Integrations.SalesloftApiGateway do
   @moduledoc """
-  This module contains, SalesLoft API Gateway functtions
+  This module contains, SalesLoft API Gateway functions
   """
 
   require Logger
@@ -29,22 +29,47 @@ defmodule Sladmin.Integrations.SalesloftApiGateway do
       iex> get_all_people(nil)
       {:error, msg}
   """
-  def get_all_people, do: get_people_by_page(1)
+  def get_all_people, do: get_all_people(1)
 
-  def get_people_by_page(nil), do: []
+  def get_all_people(nil), do: []
 
-  def get_people_by_page(page) do
+  def get_all_people(page) do
     url = "#{@base_url}?per_page=100&page=#{page}"
     Logger.info("Requesting people info for page #{page}")
 
     case make_request(url, @retries) do
       {:ok, response} ->
-        next_page =
-          Map.get(response, "metadata", %{}) |> Map.get("paging", %{}) |> Map.get("next_page")
+        next_page = response |> Map.get("metadata", %{}) |> Map.get("paging", %{}) |> Map.get("next_page")
 
+        people = response |> Map.get("data", []) |> Enum.map(&CMS.convert_to_person(&1))
+
+        people ++ get_all_people(next_page)
+
+      {:error, resp} ->
+        {:error, "API request failed, #{resp.reason}"}
+    end
+  end
+
+  @doc """
+  Return person_feed(check GraphQL types)
+
+    ## Examples
+
+      iex> get_people_with_meta(1)
+      {:ok, %{people: [%Person{}, ...], pagination_info: %{"current_page" => 1, ...}}
+
+      iex> get_people_with_meta(nil)
+      {:error, msg}
+  """
+  def get_people_with_meta(page) do
+    url = "#{@base_url}?per_page=100&page=#{page}"
+
+    case make_request(url, @retries) do
+      {:ok, response} ->
+        pagination_info = response |> Map.get("metadata", %{}) |> Map.get("paging", %{})
         people = Map.get(response, "data", []) |> Enum.map(&CMS.convert_to_person(&1))
 
-        people ++ get_people_by_page(next_page)
+        {:ok, %{people: people, pagination_info: pagination_info}}
 
       {:error, resp} ->
         {:error, "API request failed, #{resp.reason}"}

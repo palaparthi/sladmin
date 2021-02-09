@@ -13,4 +13,4 @@ COPY assets/webpack.config.js assets
 COPY assets/tsconfig.json assets
 COPY assets/.babelrc assets
 
-CMD mix deps.get && cd assets && npm install && cd .. && mix phx.server
+CMD mix deps.get && mix ecto.setup && cd assets && npm install && cd .. && mix phx.server

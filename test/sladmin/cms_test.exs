@@ -73,7 +73,7 @@ defmodule Sladmin.CMSTest do
 
   describe "get_possible_duplicates" do
     test "list_duplicate_emails/0 returns list" do
-      assert CMS.list_duplicate_emails() == []
+      assert CMS.list_duplicate_emails() == {:ok, []}
     end
 
     test "get_possible_duplicates_from_people/1 empty list returns list" do

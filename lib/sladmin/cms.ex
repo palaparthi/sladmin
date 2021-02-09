@@ -34,6 +34,21 @@ defmodule Sladmin.CMS do
   end
 
   @doc """
+  Returns the list of people per page.
+
+  ## Examples
+
+      iex> get_people_with_meta(1)
+      {:ok, %{people: [%Person{}, ...], pagination_info: %{"current_page" => 1, ...}}
+
+    iex> get_people_with_meta()
+      {:error, msg}
+  """
+  def get_people_with_meta(page) do
+    SalesloftApiGateway.get_people_with_meta(page)
+  end
+
+  @doc """
   Returns character counts of every string in the list
 
   ## Examples
